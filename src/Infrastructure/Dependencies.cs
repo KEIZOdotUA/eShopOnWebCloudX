@@ -10,7 +10,7 @@ public static class Dependencies
 {
     public static void ConfigureServices(IConfiguration configuration, IServiceCollection services)
     {
-        var useOnlyInMemoryDatabase = false;
+        var useOnlyInMemoryDatabase = true;
         if (configuration["UseOnlyInMemoryDatabase"] != null)
         {
             useOnlyInMemoryDatabase = bool.Parse(configuration["UseOnlyInMemoryDatabase"]);
