@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.eShopWeb.ApplicationCore.Entities;
 using Microsoft.eShopWeb.ApplicationCore.Interfaces;
 using Microsoft.eShopWeb.ApplicationCore.Specifications;
+using Microsoft.Extensions.Logging;
 using MinimalApi.Endpoint;
 
 namespace Microsoft.eShopWeb.PublicApi.CatalogItemEndpoints;
@@ -20,11 +21,13 @@ public class CatalogItemListPagedEndpoint : IEndpoint<IResult, ListPagedCatalogI
     private IRepository<CatalogItem> _itemRepository;
     private readonly IUriComposer _uriComposer;
     private readonly IMapper _mapper;
+    private readonly ILogger<CatalogItemListPagedEndpoint> _logger;
 
-    public CatalogItemListPagedEndpoint(IUriComposer uriComposer, IMapper mapper)
+    public CatalogItemListPagedEndpoint(IUriComposer uriComposer, IMapper mapper, ILogger<CatalogItemListPagedEndpoint> logger)
     {
         _uriComposer = uriComposer;
         _mapper = mapper;
+        _logger = logger;
     }
 
     public void AddRoute(IEndpointRouteBuilder app)
@@ -41,10 +44,13 @@ public class CatalogItemListPagedEndpoint : IEndpoint<IResult, ListPagedCatalogI
 
     public async Task<IResult> HandleAsync(ListPagedCatalogItemRequest request)
     {
+        throw new Exception("Cannot move further");
+
         var response = new ListPagedCatalogItemResponse(request.CorrelationId());
 
         var filterSpec = new CatalogFilterSpecification(request.CatalogBrandId, request.CatalogTypeId);
         int totalItems = await _itemRepository.CountAsync(filterSpec);
+        _logger.LogInformation($"Total items: {totalItems}");
 
         var pagedSpec = new CatalogFilterPaginatedSpecification(
             skip: request.PageIndex.Value * request.PageSize.Value,
