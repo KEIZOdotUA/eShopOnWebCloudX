@@ -85,6 +85,11 @@ builder.Services.AddScoped<HttpClient>(s => new HttpClient
     BaseAddress = new Uri(baseUrlConfig.WebBase)
 });
 
+builder.Services.AddHttpClient("Azure Function", config =>
+{
+    config.BaseAddress = new Uri(builder.Configuration["baseUrls:azureFunctionBase"]);
+});
+
 // add blazor services
 builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddServerSideBlazor();
