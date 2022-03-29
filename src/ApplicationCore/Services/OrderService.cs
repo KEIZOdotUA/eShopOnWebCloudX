@@ -1,4 +1,8 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using Ardalis.GuardClauses;
 using Microsoft.eShopWeb.ApplicationCore.Entities;
@@ -6,6 +10,7 @@ using Microsoft.eShopWeb.ApplicationCore.Entities.BasketAggregate;
 using Microsoft.eShopWeb.ApplicationCore.Entities.OrderAggregate;
 using Microsoft.eShopWeb.ApplicationCore.Interfaces;
 using Microsoft.eShopWeb.ApplicationCore.Specifications;
+using Newtonsoft.Json;
 
 namespace Microsoft.eShopWeb.ApplicationCore.Services;
 
@@ -15,16 +20,19 @@ public class OrderService : IOrderService
     private readonly IUriComposer _uriComposer;
     private readonly IRepository<Basket> _basketRepository;
     private readonly IRepository<CatalogItem> _itemRepository;
+    private readonly IHttpClientFactory _httpClientFactory;
 
     public OrderService(IRepository<Basket> basketRepository,
         IRepository<CatalogItem> itemRepository,
         IRepository<Order> orderRepository,
-        IUriComposer uriComposer)
+        IUriComposer uriComposer,
+        IHttpClientFactory httpClientFactory)
     {
         _orderRepository = orderRepository;
         _uriComposer = uriComposer;
         _basketRepository = basketRepository;
         _itemRepository = itemRepository;
+        _httpClientFactory = httpClientFactory;
     }
 
     public async Task CreateOrderAsync(int basketId, Address shippingAddress)
@@ -48,6 +56,20 @@ public class OrderService : IOrderService
 
         var order = new Order(basket.BuyerId, shippingAddress, items);
 
+        await UploadOrder(order);
+
         await _orderRepository.AddAsync(order);
+    }
+
+    private async Task UploadOrder(Order order)
+    {
+        var client = _httpClientFactory.CreateClient("Azure Function");
+
+        var request = new HttpRequestMessage(HttpMethod.Post, String.Empty)
+        {
+            Content = new StringContent(JsonConvert.SerializeObject(order), Encoding.UTF8, "application/json")
+        };
+
+        await client.SendAsync(request);
     }
 }
