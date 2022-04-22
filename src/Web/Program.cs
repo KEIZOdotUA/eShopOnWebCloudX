@@ -129,7 +129,7 @@ app.UseHealthChecks("/health",
 if (app.Environment.IsDevelopment())
 {
     app.Logger.LogInformation("Adding Development middleware...");
-    app.UseDeveloperExceptionPage();
+    //app.UseDeveloperExceptionPage();
     app.UseShowAllServicesMiddleware();
     app.UseMigrationsEndPoint();
     app.UseWebAssemblyDebugging();
